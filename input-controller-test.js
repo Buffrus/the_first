@@ -16,7 +16,7 @@ let testObject2 = {
   },
   "right": {
     keys: [68],
-    enabled: false
+    enabled: true
   },
   "jump": {
     keys: [32]
@@ -37,9 +37,10 @@ inputController.attach( testTarget, !false );
 // inputController.enabled = false;
 
 
-var jump;
-var jumpFinish;
-var stepJump
+var is_jumping;
+var current_jump_altitude = 0;
+var jump_step_default = 4;
+var jump_step;
 
 setInterval(function(){
   
@@ -55,88 +56,130 @@ setInterval(function(){
   }
 
   
-  if( inputController.isActionActive("jump")){
-    if(!jump) {
-      jump = true;
-      box.style.backgroundColor = "black";
-      stepJump = 3;
-      jumpFinish = false;
-    }
+  if( inputController.isActionActive("jump") && !is_jumping ){
+    is_jumping = true;
+    current_jump_altitude = jump_step_default;
+    jump_step = jump_step_default;
+    box.style.backgroundColor = "black";
   }
 
-  if(jump) {
-    console.log(stepJump);
-    box.style.top = (50 - stepJump) + "%";
+  if(is_jumping) {
+    console.log(current_jump_altitude);
+    
+
+    current_jump_altitude += jump_step;
+    // if( jump_step > -jump_step_default ) 
+      jump_step -= .2;
+
+    /*
+    if( current_jump_altitude >= 20 ){
+      jump_step = -jump_step_default;
+    }
+    */
+
+    if( current_jump_altitude <= 0 ){
+
+      current_jump_altitude = 0;
+      jump_step = - jump_step/2;
+
+      if( jump_step < .8 ){
+        is_jumping = false;
+        box.style.backgroundColor = "red";
+      }
+    }
+
+    box.style.top = (50 - current_jump_altitude) + "%";
+    
+/*
     if(jumpFinish) {
-      stepJump-= 3;
+      current_jump_altitude-= 3;
     } else {
-      stepJump+= 3;
-      if(stepJump >= 20) {
+      current_jump_altitude+= 3;
+      if(current_jump_altitude >= 20) {
         jumpFinish = true;
       }
     }
-    if(stepJump <= -3) {
-      console.log(stepJump);
+    if(current_jump_altitude <= -3) {
+      console.log(current_jump_altitude);
       jump = false;
       box.style.backgroundColor = "red";
     }
+    */
   }
 
 }, 40);
 
 
-// setInterval(function() {
-//   console.log(inputController.isKeyPressed(37));
-// }, 2000);
+setInterval(function() {
+  console.log(inputController.isKeyPressed(39));
+}, 2000);
 
 
 
 // >>> BUTTON >>>
-function addInput( name, type, onClick , id){
+function addElement( name, type, id ){
   var buttons = document.getElementsByClassName('buttons')[0];
   // console.log('buttons:', buttons);
-  var button = document.createElement('input');
-  buttons.appendChild( button );
-  button.value = name;
-  button.type = type;
-  button.id = id;
-  button.onclick = onClick;
+  var element = document.createElement('input');
+  buttons.appendChild( element );
+  element.value = name;
+  element.type = type;
+  element.id = id;
+  return element;
 }
 
+function addInput( id, value ){
+  var input = addElement( value, 'text', id );
+}
+
+function addButton( name, onClick, get_value_form ){
+  var button = addElement( name, 'button' );
+  if( get_value_form ){
+    var target = document.getElementById(get_value_form);
+    button.onclick = function(){
+      onClick( target.value );
+    }
+  }else{
+    button.onclick = onClick;
+  }
+}
+
+
+
+
 //
-addInput( 'Log inputController.actions', 'button', function(){
+addButton( 'Log inputController.actions', function(){
   console.log( inputController.actions );
 });
 
 //
-addInput( 'bindActions', 'button',  function(){
+addButton( 'bindActions', function(){
   inputController.bindActions( testObject2 );
 });
 
 //
-addInput( 'attach', 'button',  function(){
+addButton( 'attach', function(){
   inputController.attach(testTarget, false);
 });
 
 //
-addInput( 'detach', 'button',  function(){
+addButton( 'detach', function(){
   inputController.detach();
 });
 
 //
-addInput( 'action', 'text', undefined, 'actionField');
+addInput( 'actionField', 'action' );
 
 //
-addInput( 'enableAction', 'button', function(){
-  let actionField = document.getElementById("actionField");
-  inputController.enableAction(actionField.value);
-});
+addButton( 'enableAction', function( target_value ){
+  // console.log('enableAction: ', target_value );
+  inputController.enableAction(target_value);
+}, 'actionField' );
 
 //
-addInput( 'disableAction', 'button', function(){
-  let actionField = document.getElementById("actionField");
-  inputController.disableAction(actionField.value);
-});
+addButton( 'disableAction', function( target_value ){
+  inputController.disableAction(target_value);
+}, 'actionField' );
 
 
 

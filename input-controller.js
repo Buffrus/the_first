@@ -28,6 +28,10 @@ class InputController {
     this.enabled;
     this.focused;
 
+    this.actions_by_keycode = {};
+    this.list_of_keys_pressed = {};
+    
+
     /*
     for (let action in actions_to_bind) {
       if(!('enabled' in actions_to_bind[action]))
@@ -52,12 +56,18 @@ class InputController {
       // Добавить отсутствующие активности
       if(!action) {
         action = this.actions[action_name] = {};
-        action.keys = [];
+        action.name = action_name;
+        // action.keys = [];
         action.enabled = true;
         action.active = false;
       }
 
-      action.keys = [...action.keys, ...action_to_bind.keys];
+      if( action_to_bind.keys ) {
+          for(let key_code of action_to_bind.keys) {
+          this.actions_by_keycode[key_code] = action;
+        }
+      }
+      // action.keys = [...action.keys, ...action_to_bind.keys];
 
       if( action_to_bind.enabled !== undefined ) action.enabled = action_to_bind.enabled;
 
@@ -67,6 +77,8 @@ class InputController {
 
   attach(target, dont_enable) {
     
+    var scope = this;
+
     this.detach();
 
     this.target = target;
@@ -77,26 +89,45 @@ class InputController {
     //target.addEventListener('keypress', this.enableAction);
     if( !this.onKeyDown ){
       
-      this.onKeyDown = (e) => {
-        console.log("onKeyDown: ", e.keyCode);
-        for (let action_name in this.actions) {
-          let action = this.actions[action_name];
-          if(action.keys.indexOf( e.keyCode ) != -1 && action.enabled) {
-            action.active = true;          
+      this.onKeyDown = function(e) {
+        //console.log("onKeyDown: ", e.keyCode);
+        // for (let action_name in this.actions) {
+          scope.list_of_keys_pressed[e.keyCode] = true;
+          if( !scope.enabled ) return;
+          // let action = scope.actions[action_name];
+          let action = scope.actions_by_keycode[e.keyCode];
+          // let action = scope.actions[action_name];
+          if( action && action.enabled && !action.active) {
+            // if(action.keys.indexOf( e.keyCode ) != -1 && action.enabled) {
+              action.active = true;   
+              console.log(InputController.ACTION_ACTIVATED);
+            // }
           }
-        }
+        // }
         // }
       }
 
-      this.onKeyUp = (e) => {
-        console.log("onKeyUp: ", e.keyCode);
-        for (let action_name in this.actions) {
-          let action = this.actions[action_name]
-          if(action.keys.indexOf( e.keyCode ) != -1 && action.enabled) {
-            action.active = false;
-          }
-        }
+      this.onKeyUp = function(e) {
+        //console.log("onKeyUp: ", e.keyCode);
+
+        // for (let action_name in this.actions) {
+        //   let action = this.actions[action_name]
+        //   if(action.active) {
+        //     if(action.keys.indexOf( e.keyCode ) != -1 && action.enabled) {
+        //       action.active = false;
+        //       console.log(InputController.DEACTION_ACTIVATED);
+        //     }
+        //   }
         // }
+          //scope.list_of_keys_pressed[e.keyCode] = false;
+          delete scope.list_of_keys_pressed[e.keyCode];
+          if ( !scope.enabled ) return;
+          let action = scope.actions_by_keycode[e.keyCode];
+          // console.log(scope.actions_by_keycode[e.keyCode]);
+          if(action && action.active && action.enabled) {
+            action.active = false;
+            console.log(InputController.DEACTION_ACTIVATED);
+          }
       }
 
     }
@@ -135,12 +166,7 @@ class InputController {
   }
 
   isKeyPressed(keyCode) {
-    for (let action_name in this.actions) {
-      let action = this.actions[action_name]
-      if(action.keys.indexOf( keyCode ) != -1 && action.active) {
-        return true;
-      }
-    }
+    if (this.list_of_keys_pressed[keyCode]) return true;
     return false;
   }
 
