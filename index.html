@@ -2,9 +2,54 @@
 <head>
   <meta charset="UTF-8">
   <title>Controller</title>
+  <style>
+    *{
+      padding: 0;
+      margin:  0;
+    }
+    #testDiv{
+      width: 500px;
+      height: 500px;
+      background: yellow;
+      position: relative;
+    }
+    #box{
+      width: 50px;
+      height: 50px;
+      background-color: red;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      margin-left: -25px;
+      margin-top: -25px;
+    }
+    input[type="button"]{
+      padding: 5px;
+      margin: 5px;
+    }
+  </style>
 </head>
 <body>
-  <div id="testDiv" style="height: 200px; width: 100px; background-color: #f30303;"></div>
+ 
+  <div tabindex="0" id="testDiv">
+    <div id="box" style="left:50%;top:50%;"></div>
+  </div>
+  
+  <div class="buttons"></div>
+
+  <!-- 
+  <input value="console.log(a.actions);" onclick="console.log(a.actions);" type="button">
+  <input value="a.bindActions" onclick="a.bindActions = testObject2;" type="button">
+  <input value="a.attach" onclick="a.attach(testTarget, false);" type="button">
+  <input value="a.detach" onclick="a.detach(testTarget, false);" type="button">
+  <br>
+  <input id="testAction" value="" type="text">
+  <input value="isActionActive" onclick="let testAction = document.getElementById('testAction'); console.log(a.isActionActive(testAction.value));" type="button">
+  <input value="enableAction" onclick="let testAction = document.getElementById('testAction'); a.enableAction(testAction.value);" type="button">
+  <input value="disableAction" onclick="let testAction = document.getElementById('testAction'); a.disableAction(testAction.value);" type="button">
+ -->
+
+  <!--  -->
   <script defer src="input-controller.js"></script>
   <script defer src="input-controller-test.js"></script>
 </body>
