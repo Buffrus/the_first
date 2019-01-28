@@ -1,15 +1,53 @@
 
-let testObject = {
-  "left": {
-    keys: [37],
-    enabled: false
+let config = {
+  
+  input_devices: {
+    keyboard: {
+      enabled: true,
+      // enabled_on: ['desktop'],
+    },
+    mouse: {
+      enabled: true,
+      // enabled_on: ['desktop'],
+      min_distance: 50,
+      max_distance: 200,
+    },
+    touch: {
+      enabled: true,
+      // enabled_on: ['mobile'],
+      controller_class: TouchInputController,
+      min_distance: 50,
+      max_distance: 200,
+    }
   },
-  "right": {
-    keys: [39]
-  },
+
+  actions:{
+
+    "left": {
+      keys: [37],
+      enabled: false
+    },
+    "right": {
+      keys: [39]
+    },
+    
+    "move-left": {
+      gestures: ["swipe-left"]
+    },
+    "move-right": {
+      gestures: ["swipe-right"]
+    },
+    "move-up": {
+      gestures: ["swipe-up"]
+    },
+    "move-down": {
+      gestures: ["swipe-down"]
+    }
+
+  }
 }
 
-let testObject2 = {
+let config2 = {
   "left": {
     keys: [65],
     enabled: true
@@ -26,12 +64,12 @@ let testObject2 = {
 let testTarget = document.getElementById('testDiv');
 let box = document.getElementById('box');
 
-// let inputController = new InputController(testObject, testTarget);
+let inputController = new InputController( config, testTarget);
 
-let inputController = new InputController();
-inputController.bindActions( testObject );
+// let inputController = new InputController();
+// inputController.bindActions( config.actions );
 
-inputController.attach( testTarget, !false );
+// inputController.attach( testTarget, !false );
 
 // inputController.attach( testTarget );
 // inputController.enabled = false;
@@ -41,8 +79,10 @@ var is_jumping;
 var current_jump_altitude = 0;
 var jump_step_default = 4;
 var jump_step;
+var xs;
 
 setInterval(function(){
+  
   
   var xs, ys;
   if( inputController.isActionActive("left")){
@@ -51,17 +91,11 @@ setInterval(function(){
     xs = 1;
   }
   // xs = Math.random() > .5 ? 1 : -1;
-  if( xs !== undefined ){
-    box.style.left = parseInt( box.style.left ) + xs + "%";
-  }
+  // if( xs !== undefined ){
+  //   box.style.left = parseInt( box.style.left ) + xs + "%";
+  // }
 
-  
-  if( inputController.isActionActive("jump") && !is_jumping ){
-    is_jumping = true;
-    current_jump_altitude = jump_step_default;
-    jump_step = jump_step_default;
-    box.style.backgroundColor = "black";
-  }
+  moveBox(xs,ys);
 
   if(is_jumping) {
     console.log(current_jump_altitude);
@@ -109,10 +143,55 @@ setInterval(function(){
 
 }, 40);
 
+// testTarget.addEventListener( "input-controller:activate", function(e){
+testTarget.addEventListener( InputController.ACTION_ACTIVATED, function(e){
+  switch( e.detail ) {
+  //switch( e.detail ){
 
-setInterval(function() {
-  console.log(inputController.isKeyPressed(39));
-}, 2000);
+    case "jump":
+      if( !is_jumping ){
+        is_jumping = true;
+        current_jump_altitude = jump_step_default;
+        jump_step = jump_step_default;
+        box.style.backgroundColor = "black";
+      }
+      break;
+
+    case "move-left":
+      moveBox(-20);
+      break;
+
+    case "move-right":
+      moveBox(20);
+      break;
+
+    case "move-up":
+      moveBox(undefined, -20);
+      break;
+
+    case "move-down":
+      moveBox(undefined, 20);
+      break;
+
+      
+  }
+
+});
+
+function moveBox(_xs,_ys) {
+  if( _xs !== undefined ){
+    box.style.left = parseInt( box.style.left ) + _xs + "%";
+  }
+  if( _ys !== undefined ){
+    box.style.top = parseInt( box.style.top ) + _ys + "%";
+  }
+}
+
+
+
+// setInterval(function() {
+//   console.log(inputController.isKeyPressed(39));
+// }, 2000);
 
 
 
@@ -154,7 +233,7 @@ addButton( 'Log inputController.actions', function(){
 
 //
 addButton( 'bindActions', function(){
-  inputController.bindActions( testObject2 );
+  inputController.bindActions( config2 );
 });
 
 //
@@ -185,5 +264,5 @@ addButton( 'disableAction', function( target_value ){
 
 // <<< BUTTON <<<
 // console.log(a.actionsToBind);
-// a.bindActions = testObject2;
+// a.bindActions = config2;
 // console.log(a.actionsToBind);
